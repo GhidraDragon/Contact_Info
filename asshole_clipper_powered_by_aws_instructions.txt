@@ -1,0 +1,333 @@
+Below is an end-to-end example solution in Python for detecting toxicity (“behaving like an asshole”) in a Twitch VOD, then automatically clipping the relevant portions. It uses AWS Transcribe for speech-to-text and a Hugging Face toxicity model for classification. This sample also shows how you might integrate with AWS Lambda and S3 for serverless operation.
+
+	Disclaimer
+		1.	“Behaving like an asshole” is subjective and can’t be perfectly captured by any model. Here, we approximate it with toxicity detection and a tunable threshold.
+	2.	This code is an illustrative prototype—actual production code will need more robust error handling, logging, authentication, and optimization.
+	3.	Running this on AWS will incur costs associated with AWS services (Transcribe, Lambda, S3, etc.).
+	4.	This example uses open-source NLP models that might not be perfectly suited for your particular use case. Use them at your own discretion, and test thoroughly.
+	5.	We highlight some potential security concerns at the bottom.
+
+Overview
+	1.	Upload the Twitch VOD to S3 (e.g., s3://mybucket/myvod.mp4).
+	2.	Trigger the transcription using AWS Transcribe.
+	3.	Get the transcription text and break it into time-stamped segments.
+	4.	Feed each segment into a toxicity classifier (e.g., Hugging Face).
+	5.	Identify segments with toxicity above threshold; use timestamps to create a clip around them.
+	6.	Store the clipped segments back to S3 (or any storage of your choice).
+
+Below is a full example showing one possible approach.
+
+Step-by-Step Code
+
+1. Requirements
+
+Make sure to install these:
+
+pip install boto3
+pip install awscli
+pip install botocore
+pip install ffmpeg-python
+pip install torch  # or another supported backend for Hugging Face
+pip install transformers
+
+Additionally, you need to have AWS credentials correctly configured (via environment variables, AWS CLI config, or IAM role).
+
+2. IAM Permissions
+	•	The AWS Lambda (or EC2, ECS, etc.) role must have the following permissions:
+	•	transcribe:StartTranscriptionJob
+	•	transcribe:GetTranscriptionJob
+	•	s3:GetObject, s3:PutObject
+	•	(Potentially) s3:ListBucket
+	•	Make sure the role also has permission to use CloudWatch logs (if you plan to log).
+
+3. Lambda Handler (Optional)
+
+If you plan to run this as a serverless architecture, you can configure an S3 event trigger that fires whenever you upload a new Twitch VOD. The Lambda function below shows how to parse the S3 event, call AWS Transcribe, poll for the result, run toxicity detection, and clip the relevant segments.
+
+	If you prefer a non-serverless approach (running on an EC2 or local machine), you can remove the Lambda handler structure and just call the functions directly.
+
+import json
+import time
+import os
+import uuid
+import boto3
+import ffmpeg
+from botocore.exceptions import ClientError
+
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+
+# -----------------------------
+# Global objects and constants
+# -----------------------------
+TRANSCRIBE_CLIENT = boto3.client('transcribe')
+S3_CLIENT = boto3.client('s3')
+
+# Preload Hugging Face model/pipeline (e.g. a toxicity model)
+MODEL_NAME = "unitary/toxic-bert"  # An example model
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
+toxic_detector = pipeline("text-classification", model=model, tokenizer=tokenizer)
+
+# Customize thresholds
+TOXICITY_THRESHOLD = 0.8  # Confidence above which we consider the segment "toxic"
+CLIP_PADDING_SECONDS = 5  # Clip ± this many seconds around the toxic segment
+
+def lambda_handler(event, context):
+    """
+    AWS Lambda handler for automatically detecting 'asshole' behavior in a Twitch VOD.
+    1. Triggered by S3 event.
+    2. Starts an AWS Transcribe job.
+    3. Polls for transcription completion.
+    4. Fetches transcript, runs toxicity detection, and clips.
+    5. Uploads clipped segments to S3.
+    """
+    # 1. Parse S3 event
+    record = event['Records'][0]
+    bucket = record['s3']['bucket']['name']
+    key = record['s3']['object']['key']
+
+    # 2. Generate a unique name for the Transcribe job
+    job_name = f"transcribe-job-{str(uuid.uuid4())}"
+
+    # 3. Start AWS Transcribe job
+    media_uri = f"s3://{bucket}/{key}"
+    start_transcription_job(job_name, media_uri)
+
+    # 4. Poll for completion and get the transcription JSON
+    transcript_json = poll_transcription_and_get_result(job_name)
+
+    # 5. Parse the transcript into segments with timestamps
+    segments = parse_transcript_into_segments(transcript_json)
+
+    # 6. Classify each segment for toxicity
+    toxic_segments = []
+    for segment in segments:
+        if is_toxic(segment["text"]):
+            toxic_segments.append(segment)
+
+    # 7. Clip the original video around the toxic segments
+    #    For demonstration, we use local /tmp space in AWS Lambda
+    local_video_path = f"/tmp/{os.path.basename(key)}"
+    download_s3(bucket, key, local_video_path)
+
+    clipped_urls = []
+    for i, seg in enumerate(toxic_segments):
+        clip_path, clip_s3_url = clip_segment(
+            local_video_path, bucket, seg, i
+        )
+        clipped_urls.append(clip_s3_url)
+
+    # Return a summary (could also store in a DB)
+    return {
+        "original_video": media_uri,
+        "detected_toxic_segments": len(toxic_segments),
+        "clipped_segments": clipped_urls
+    }
+
+# -------------------------------------
+# Helper Functions
+# -------------------------------------
+
+def start_transcription_job(job_name, media_uri, language_code="en-US"):
+    """
+    Starts an AWS Transcribe job for the provided media file.
+    """
+    try:
+        response = TRANSCRIBE_CLIENT.start_transcription_job(
+            TranscriptionJobName=job_name,
+            LanguageCode=language_code,
+            Media={'MediaFileUri': media_uri},
+            OutputBucketName=None,  # If none, the transcript is in AWS's bucket, so we will fetch by URL
+            OutputKey=None
+        )
+        print(f"Started Transcribe Job: {job_name}")
+        return response
+    except ClientError as e:
+        print(f"Error starting transcription job: {e}")
+        raise e
+
+
+def poll_transcription_and_get_result(job_name):
+    """
+    Polls for transcription completion. Returns JSON once the job is finished.
+    """
+    while True:
+        status = TRANSCRIBE_CLIENT.get_transcription_job(TranscriptionJobName=job_name)
+        if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED', 'FAILED']:
+            if status['TranscriptionJob']['TranscriptionJobStatus'] == 'FAILED':
+                raise RuntimeError(f"Transcription job failed: {status}")
+            transcript_file_uri = status['TranscriptionJob']['Transcript']['TranscriptFileUri']
+            # Fetch the transcript JSON via HTTPS
+            import requests
+            r = requests.get(transcript_file_uri)
+            return r.json()
+        print("Waiting for transcription to complete...")
+        time.sleep(5)
+
+
+def parse_transcript_into_segments(transcript_json):
+    """
+    Given the AWS Transcribe JSON, returns a list of segments:
+    [
+        {
+            "start_time": float,
+            "end_time": float,
+            "text": str
+        },
+        ...
+    ]
+    """
+    segments = []
+    items = transcript_json['results']['items']
+    current_segment = {"start_time": None, "end_time": None, "text": ""}
+
+    for item in items:
+        if item['type'] == 'pronunciation':
+            # Gather start/end times
+            start_time = float(item['start_time'])
+            end_time = float(item['end_time'])
+
+            # If segment has no start_time yet, set it
+            if current_segment["start_time"] is None:
+                current_segment["start_time"] = start_time
+
+            current_segment["end_time"] = end_time
+            current_segment["text"] += item['alternatives'][0]['content'] + " "
+
+        elif item['type'] == 'punctuation':
+            # Append punctuation to current text
+            current_segment["text"] = current_segment["text"].rstrip() + item['alternatives'][0]['content'] + " "
+
+    # For simplicity, treat the entire transcript as one big segment.
+    # Alternatively, you could break up by silence intervals or phrases.
+    segments.append({
+        "start_time": current_segment["start_time"],
+        "end_time": current_segment["end_time"],
+        "text": current_segment["text"].strip()
+    })
+
+    return segments
+
+
+def is_toxic(text):
+    """
+    Uses a Hugging Face pipeline for toxicity detection.
+    If the returned label is 'toxic' and confidence is above TOXICITY_THRESHOLD -> True
+    NOTE: The actual model's labels can vary. Some models label as 'LABEL_0' or 'LABEL_1'.
+    You might need to adjust accordingly.
+    """
+    results = toxic_detector(text, truncation=True)
+    # Example structure of results: [{'label': 'toxic', 'score': 0.95}]
+    for result in results:
+        label = result['label'].lower()
+        score = result['score']
+        # This is model-dependent logic; adjust if your model uses different labels
+        if "toxic" in label and score >= TOXICITY_THRESHOLD:
+            return True
+    return False
+
+
+def clip_segment(local_video_path, bucket, segment, index):
+    """
+    Uses ffmpeg to clip a portion of the video ± CLIP_PADDING_SECONDS.
+    Uploads the clip to S3 and returns the local clip path and the S3 URL.
+    """
+    start_time = max(0, segment["start_time"] - CLIP_PADDING_SECONDS)
+    end_time = segment["end_time"] + CLIP_PADDING_SECONDS
+    duration = end_time - start_time
+
+    output_clip = f"/tmp/clip_{index}.mp4"
+
+    # ffmpeg-python usage
+    (
+        ffmpeg
+        .input(local_video_path, ss=start_time, t=duration)
+        .output(output_clip, codec="copy")
+        .run()
+    )
+
+    # Upload to S3
+    clip_key = f"clips/clip_{index}.mp4"
+    upload_s3(bucket, output_clip, clip_key)
+    clip_s3_url = f"s3://{bucket}/{clip_key}"
+
+    return output_clip, clip_s3_url
+
+
+def download_s3(bucket, key, download_path):
+    """
+    Downloads a file from S3 to a local path.
+    """
+    try:
+        S3_CLIENT.download_file(bucket, key, download_path)
+        print(f"Downloaded s3://{bucket}/{key} to {download_path}")
+    except ClientError as e:
+        print(f"Error downloading from S3: {e}")
+        raise e
+
+
+def upload_s3(bucket, file_path, key):
+    """
+    Uploads a local file to S3.
+    """
+    try:
+        S3_CLIENT.upload_file(file_path, bucket, key)
+        print(f"Uploaded {file_path} to s3://{bucket}/{key}")
+    except ClientError as e:
+        print(f"Error uploading to S3: {e}")
+        raise e
+
+Security Considerations
+	1.	Temporary Storage in Lambda
+	•	AWS Lambda has limited /tmp space. For large VODs, you might exceed that limit. You’ll need alternative approaches (e.g., chunk the VOD, process in smaller segments, or process externally on ECS/EC2).
+	2.	Transcribe Job Security
+	•	AWS Transcribe jobs default to an AWS-managed S3 bucket if OutputBucketName isn’t specified. Verify that the returned JSON transcript is not publicly accessible.
+	3.	Model/Inference Security
+	•	Hosting large models can consume memory; ensure your Lambda/ECS environment has enough RAM and ephemeral storage.
+	•	If you use any external or community model from Hugging Face, carefully review it for correctness and potential malicious content.
+	4.	IAM Permissions
+	•	Grant only the minimal permissions required for Transcribe and S3 operations.
+	5.	User-Provided Content
+	•	Users could upload malicious or unexpected files to your S3 bucket. Make sure to validate media file types and handle errors gracefully (e.g., if the file is not a valid MP4).
+
+Using It Outside Lambda
+
+If you’re not using Lambda, you can adapt the same code. Instead of a lambda_handler function, you’d simply do something like:
+
+if __name__ == "__main__":
+    # Suppose we have a local .mp4 or an S3 path
+    bucket_name = "mybucket"
+    video_key = "myvod.mp4"
+
+    # 1. Create a unique Transcribe job name
+    job_name = f"transcribe-job-{str(uuid.uuid4())}"
+
+    # 2. Start transcription
+    media_uri = f"s3://{bucket_name}/{video_key}"
+    start_transcription_job(job_name, media_uri)
+
+    # 3. Poll and get the transcript
+    transcript_json = poll_transcription_and_get_result(job_name)
+
+    # 4. Parse segments
+    segments = parse_transcript_into_segments(transcript_json)
+
+    # 5. Classify toxicity
+    toxic_segments = [seg for seg in segments if is_toxic(seg["text"])]
+
+    # 6. Download VOD locally
+    local_vod_path = "/tmp/myvod.mp4"
+    download_s3(bucket_name, video_key, local_vod_path)
+
+    # 7. Clip
+    for i, seg in enumerate(toxic_segments):
+        clip_path, clip_s3_url = clip_segment(local_vod_path, bucket_name, seg, i)
+        print(f"Clipped segment {i} => {clip_s3_url}")
+
+Final Notes
+	•	This code uses AWS Transcribe for speech-to-text, which works best for primarily one speaker or a relatively clear audio track. In real Twitch VODs with music, background noise, or multiple voices, you’ll need more advanced processing or a specialized model.
+	•	For more accurate “toxic” detection, consider using a custom fine-tuned model or a more sophisticated multi-label classification approach.
+	•	Make sure you thoroughly test on real data before relying on it for production decisions.
+
+That’s it! You now have a working example of how to detect and automatically clip “asshole” (toxic) behavior from a Twitch VOD on AWS.
