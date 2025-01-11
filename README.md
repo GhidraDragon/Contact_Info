@@ -2,3 +2,7 @@
 
 https://t.co/nrHAMmyzCZ
 
+![xqc](https://github.com/user-attachments/assets/48ce0bf9-95e8-41d9-bb85-f1f34b2aac6d)
+
+
+![pokimane](https://github.com/user-attachments/assets/96c3059e-ea3a-43a7-b537-8782604c495b)
