@@ -10,3 +10,7 @@ https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
 
 
 ![pokimane](https://github.com/user-attachments/assets/96c3059e-ea3a-43a7-b537-8782604c495b)
+
+![Screenshot 2025-01-12 at 9 02 42 AM](https://github.com/user-attachments/assets/ed86a70a-ff9a-4244-9886-e418d6dab4ba)
+
+![Screenshot 2025-01-12 at 9 04 10 AM](https://github.com/user-attachments/assets/f97aa7e3-b017-4df5-8a9b-60e5ff3417fd)
