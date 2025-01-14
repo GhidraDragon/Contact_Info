@@ -2,6 +2,9 @@
 
 https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
 
+![Screenshot 2025-01-14 at 11 09 13 AM](https://github.com/user-attachments/assets/189df668-c8f6-4757-b353-aea9ac02be95)
+
+
 ![Screenshot 2025-01-12 at 5 23 44 AM](https://github.com/user-attachments/assets/7a4e4406-d28a-46e1-a337-f12c0c816db9)
 
 
