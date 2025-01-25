@@ -1,4 +1,21 @@
-[Bo_VS_Beth_and_MA.pdf](https://github.com/user-attachments/files/18544872/Bo_VS_Beth_and_MA.pdf)
+I have not said I wouldn't follow any MA pre-trial conditions. However I'm seeking an emergency Federal injunction or restraining order first thing Monday Jan 27 2025 
+
+https://docs.google.com/document/d/120J8dIymI05L1go2LePaL-vt701RQqNZfP4994qqHQo/edit?usp=sharing
+
+Currently beating Twitch in US District Court Northern California; the judge gave me 100% I asked for
+
+https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
+
+Case documents
+
+https://drive.proton.me/urls/K78W0CF7X0#7XtbHrLpv4k9
+
+EXHIBIT 8: On January 9 2025, Judge Jacqueline Scott Corley of the US District Court of Northern California granted literally 100% of the Plaintiff’s (Bo) request in a Motion to Amend or join Apple and Google in a lawsuit vs Twitch. The defense attorneys argued for a rejection of the motion with prejudice, and lost horrifically in their ad-hominem attack
+
+EXHIBIT 9: On January 12, 2025, Plaintiff Bo filed a Motion to Amend joining Apple and Google in his lawsuit against Twitch, in an effort to defend the rights of Americans and Internet users around the world
+
+I Bo Shang, on today January 25 2025, swear under perjury that nearly 100% of the motivation of filing these lawsuits is altruism and to defend the rights of Americans and communities around the world. In mid 2023 President Biden wrote to Bo regarding these abridged rights, and now Bo is taking action.
+
 
 ![Screenshot 2025-01-10 at 1 45 46 PM](https://github.com/user-attachments/assets/5c330a02-c0d1-4d0a-83c7-8f4137b451f7)
 
