@@ -16,6 +16,15 @@ EXHIBIT 9: On January 12, 2025, Plaintiff Bo filed a Motion to Amend joining App
 
 I Bo Shang, on today January 25 2025, swear under perjury that nearly 100% of the motivation of filing these lawsuits is altruism and to defend the rights of Americans and communities around the world. In mid 2023 President Biden wrote to Bo regarding these abridged rights, and now Bo is taking action.
 
+[30.pdf](https://github.com/user-attachments/files/18546352/30.pdf)
+
+
+[32.pdf](https://github.com/user-attachments/files/18546348/32.pdf)
+[32-1.pdf](https://github.com/user-attachments/files/18546347/32-1.pdf)
+
+[31.pdf](https://github.com/user-attachments/files/18546351/31.pdf)
+[31-1.pdf](https://github.com/user-attachments/files/18546350/31-1.pdf)
+
 
 ![Screenshot 2025-01-10 at 1 45 46 PM](https://github.com/user-attachments/assets/5c330a02-c0d1-4d0a-83c7-8f4137b451f7)
 
