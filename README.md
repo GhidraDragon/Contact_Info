@@ -1,5 +1,6 @@
 ![Screenshot 2025-01-25 at 12 30 29 PM](https://github.com/user-attachments/assets/413d5782-0d28-4f12-8b82-fbe8a224aab6)
 
+![Screenshot 2025-01-25 at 12 34 52 PM](https://github.com/user-attachments/assets/744c3c8c-d3b3-4156-86a2-68a0ac0dfd77)
 
 Case documents
 
