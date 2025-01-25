@@ -1,3 +1,5 @@
+[Bo_VS_Beth_and_MA.pdf](https://github.com/user-attachments/files/18544872/Bo_VS_Beth_and_MA.pdf)
+
 ![Screenshot 2025-01-10 at 1 45 46 PM](https://github.com/user-attachments/assets/5c330a02-c0d1-4d0a-83c7-8f4137b451f7)
 
 https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
