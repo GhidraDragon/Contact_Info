@@ -1,3 +1,38 @@
+![Screenshot 2025-01-25 at 12 30 29 PM](https://github.com/user-attachments/assets/413d5782-0d28-4f12-8b82-fbe8a224aab6)
+
+![Screenshot 2025-01-25 at 12 34 52 PM](https://github.com/user-attachments/assets/744c3c8c-d3b3-4156-86a2-68a0ac0dfd77)
+
+Case documents
+
+https://drive.proton.me/urls/K78W0CF7X0#7XtbHrLpv4k9
+
+EXHIBIT 8: On January 9 2025, Judge Jacqueline Scott Corley of the US District Court of Northern California granted literally 100% of the Plaintiff’s (Bo) request in a Motion to Amend or join Apple and Google in a lawsuit vs Twitch. The defense attorneys argued for a rejection of the motion with prejudice, and lost horrifically in their ad-hominem attack
+
+EXHIBIT 9: On January 12, 2025, Plaintiff Bo filed a Motion to Amend joining Apple and Google in his lawsuit against Twitch, in an effort to defend the rights of Americans and Internet users around the world
+
+I Bo Shang, on today January 25 2025, swear under perjury that nearly 100% of the motivation of filing these lawsuits is altruism and to defend the rights of Americans and communities around the world. In mid 2023 President Biden wrote to Bo regarding these abridged rights, and now Bo is taking action.
+
+![Screenshot 2025-01-25 at 9 55 38 AM](https://github.com/user-attachments/assets/10ed2ccf-8685-4e3c-8a57-d177c68c856c)
+
+I have not said I wouldn't follow any MA pre-trial conditions. However I'm seeking an emergency Federal injunction or restraining order first thing Monday Jan 27 2025 
+
+https://docs.google.com/document/d/120J8dIymI05L1go2LePaL-vt701RQqNZfP4994qqHQo/edit?usp=sharing
+
+Currently beating Twitch in US District Court Northern California; the judge gave me 100% I asked for
+
+https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
+
+
+[30.pdf](https://github.com/user-attachments/files/18546352/30.pdf)
+
+
+[32.pdf](https://github.com/user-attachments/files/18546348/32.pdf)
+[32-1.pdf](https://github.com/user-attachments/files/18546347/32-1.pdf)
+
+[31.pdf](https://github.com/user-attachments/files/18546351/31.pdf)
+[31-1.pdf](https://github.com/user-attachments/files/18546350/31-1.pdf)
+
+
 ![Screenshot 2025-01-10 at 1 45 46 PM](https://github.com/user-attachments/assets/5c330a02-c0d1-4d0a-83c7-8f4137b451f7)
 
 https://ecf.cand.uscourts.gov/cgi-bin/DktRpt.pl?436941
